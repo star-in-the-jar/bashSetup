@@ -1,0 +1,23 @@
+export PS1="\[$(tput sgr0)\]\[\033[38;5;13m\]\W\[$(tput sgr0)\] \[$(tput sgr0)\]\[\033[38;5;33m\]\$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/')\[$(tput sgr0)\] \[$(tput sgr0)\]\[\033[38;5;46m\]\\$\[$(tput sgr0)\] \[$(tput sgr0)\]"
+alias dbd='docker compose up -d runbotics-postgresql && docker compose up -d runbotics-redis'
+alias r='cd /mnt/c/Users/Lenovo/code/runbotics/runbotics/'
+alias d='docker'
+alias dps="docker ps --format 'table{{.Names}}\t{{.ID}}\t{{.Status}}'"
+alias create_schemas='docker exec -it runbotics-postgresql bash -c "psql -U runbotics -c '\''CREATE SCHEMA IF NOT EXISTS scheduler; CREATE SCHEMA IF NOT EXISTS rb_migrations;'\''"'
+dvolrm() {
+    echo "Stopping all and removing db & java containers..."
+    docker stop $(docker ps -q)
+    docker rm runbotics-redis
+    docker rm runbotics-postgresql
+    docker rm runbotics-orchestrator
+    echo ""
+    echo "Removing volumes..."
+    docker volume rm $(docker volume ls -q)
+    echo ""
+    echo "Starting new containers..."
+    docker compose up -d runbotics-postgresql runbotics-redis runbotics-orchestrator
+    sleep 6
+    echo ""
+    echo "Creating schemas..."
+    create_schemas
+}
