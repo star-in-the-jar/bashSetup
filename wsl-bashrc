@@ -4,6 +4,8 @@ alias r='cd /mnt/c/Users/Lenovo/code/runbotics/runbotics/'
 alias d='docker'
 alias dps="docker ps --format 'table{{.Names}}\t{{.ID}}\t{{.Status}}'"
 alias create_schemas='docker exec -it runbotics-postgresql bash -c "psql -U runbotics -c '\''CREATE SCHEMA IF NOT EXISTS scheduler; CREATE SCHEMA IF NOT EXISTS rb_migrations;'\''"'
+alias dcu='docker compose up -d "$@"'
+
 dvolrm() {
     echo "Stopping all and removing db & java containers..."
     docker stop $(docker ps -q)
