@@ -1,5 +1,5 @@
 export PS1="\[$(tput sgr0)\]\[\033[38;5;13m\]\W\[$(tput sgr0)\] \[$(tput sgr0)\]\[\033[38;5;33m\]\$(git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/(\1)/')\[$(tput sgr0)\] \[$(tput sgr0)\]\[\033[38;5;46m\]\\$\[$(tput sgr0)\] \[$(tput sgr0)\]"
-alias dbd='docker compose up -d runbotics-postgresql && docker compose up -d runbotics-redis'
+alias dcudb='docker compose up -d runbotics-postgresql && docker compose up -d runbotics-redis'
 alias r='cd /mnt/c/Users/Lenovo/code/runbotics/runbotics/'
 alias d='docker'
 alias dps="docker ps --format 'table{{.Names}}\t{{.ID}}\t{{.Status}}'"
@@ -8,15 +8,18 @@ alias dcu='docker compose up -d "$@"'
 
 dvolrm() {
     echo "Stopping all and removing db & java containers..."
+    echo "      docker stop $(docker ps -q) && docker rm runbotics-redis"
     docker stop $(docker ps -q)
     docker rm runbotics-redis
     docker rm runbotics-postgresql
     docker rm runbotics-orchestrator
     echo ""
     echo "Removing volumes..."
+    echo "      docker volume rm $(docker volume ls -q)"
     docker volume rm $(docker volume ls -q)
     echo ""
     echo "Starting new containers..."
+    echo "docker compose up -d runbotics-postgresql runbotics-redis runbotics-orchestrator"
     docker compose up -d runbotics-postgresql runbotics-redis runbotics-orchestrator
     sleep 6
     echo ""

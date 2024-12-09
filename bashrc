@@ -24,6 +24,7 @@ alias gst="git stash"
 alias gop="git stash pop"
 alias gap="git stash apply"
 alias ge="git merge"
+alias gcb='git_checkout_local_branch'
 
 # scripts
 alias mvgo='function _mvgo() { mv "$1" "$2" && cd "$2"; unset -f _mvgo; }; _mvgo'
@@ -122,8 +123,8 @@ function logs() {
     local instance=$1
     local service=$2
 
-    if [[ "$instance" != "dev" && "$instance" != "prod" ]]; then
-        echo "Invalid instance. Use 'dev' or 'prod'."
+    if [[ "$instance" != "dev" && "$instance" != "prod" && "$instance" != "aws" ]]; then
+        echo "Invalid instance. Use 'dev', 'prod' or 'aws'."
         return 1
     fi
 
@@ -150,6 +151,63 @@ function logs() {
     esac
 
     ssh $instance docker service logs -f --tail 150 $service_name
+}
+
+# github pull request creation
+function openpr() {
+        branchName=$(git branch --show-current)
+        taskNumber=$(echo "$branchName" | cut -d'-' -f2-)
+        read -p "Enter PR title: " prTitle
+        gh pr create --title "[RPA-$taskNumber] $prTitle." --web
+}
+
+# git checkout local branch
+git_checkout_local_branch() {
+    local branches
+    local selected=0
+    local key
+
+    IFS=$'\n' branches=($(git branch | sed 's/^\* //' | sed 's/^  //'))
+    local branch_count=${#branches[@]}
+
+    if [[ $branch_count -eq 0 ]]; then
+        echo "No local branches available."
+        return
+    fi
+
+    display_branches() {
+        clear
+        echo "Select a branch (use 'j', 'k', Enter):"
+        for i in "${!branches[@]}"; do
+            if [[ $i -eq $selected ]]; then
+                echo "> ${branches[$i]}"
+            else
+                echo "  ${branches[$i]}"
+            fi
+        done
+    }
+
+    while true; do
+        display_branches
+        read -rsn1 key
+
+        case $key in
+            j)
+                ((selected = (selected + 1) % branch_count))
+                ;;
+            k)
+                ((selected = (selected - 1 + branch_count) % branch_count))
+                ;;
+            "")
+                git checkout "${branches[$selected]}"
+                break
+                ;;
+            q)
+                echo "Aborted."
+                break
+                ;;
+        esac
+    done
 }
 
 # PS1
