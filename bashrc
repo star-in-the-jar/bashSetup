@@ -25,6 +25,7 @@ alias gop="git stash pop"
 alias gap="git stash apply"
 alias ge="git merge"
 alias gcb='git_checkout_local_branch'
+alias gbd="removing_local_branches_by_format"
 
 # scripts
 alias mvgo='function _mvgo() { mv "$1" "$2" && cd "$2"; unset -f _mvgo; }; _mvgo'
@@ -122,6 +123,7 @@ function tabs() {
 function logs() {
     local instance=$1
     local service=$2
+    local t=${3:-150}
 
     if [[ "$instance" != "dev" && "$instance" != "prod" && "$instance" != "aws" ]]; then
         echo "Invalid instance. Use 'dev', 'prod' or 'aws'."
@@ -150,7 +152,7 @@ function logs() {
             ;;
     esac
 
-    ssh $instance docker service logs -f --tail 150 $service_name
+    ssh $instance docker service logs -f --tail $t $service_name
 }
 
 # github pull request creation
@@ -161,7 +163,6 @@ function openpr() {
         gh pr create --title "[RPA-$taskNumber] $prTitle." --web
 }
 
-# git checkout local branch
 git_checkout_local_branch() {
     local branches
     local selected=0
@@ -208,6 +209,14 @@ git_checkout_local_branch() {
                 ;;
         esac
     done
+}
+
+function removing_local_branches_by_format() {
+    local pattern=$1
+
+    echo "running: git branch | grep $pattern | xargs git branch -D"
+
+    git branch | grep $pattern | xargs git branch -D
 }
 
 # PS1
